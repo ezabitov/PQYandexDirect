@@ -15,7 +15,7 @@
 */
 
 let
-    pqyd = (FieldNames as text, ReportName as text, Token as text, ClientLogin as text, ReportType as text, DateFrom as text, DateTo as text) =>
+    pqyd = (Token as text, ClientLogin as text, ReportName as text, FieldNames as text, ReportType as text, DateFrom as text, DateTo as text) =>
 let
 
 // Обрабатываем параметр Fieldnames, делаем список, добавляем нужные значения
@@ -44,8 +44,6 @@ let
         <ReportType>"&ReportType&"</ReportType>
         <DateRangeType>CUSTOM_DATE</DateRangeType>
         <Format>TSV</Format>
-
-// С НДС
         <IncludeVAT>YES</IncludeVAT>
         <IncludeDiscount>NO</IncludeDiscount></ReportDefinition>",
 
