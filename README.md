@@ -11,7 +11,7 @@
 
 ## Как использовать
 1. Запускаем расширенный редактор запросов, вставляем код функции.
-2. Получаем токен по [ссылке](https://oauth.yandex.ru/authorize?response_type=token&client_id=365a2d0a675c462d90ac145d4f5948cc), вставляем
+2. Получаем токен по [ссылке](https://oauth.yandex.ru/authorize?response_type=token&client_id=13d711bee6294ae9a688e87b4718ad47), вставляем
 3. Заполняем логин клиента
 4. Заполняем логин клиента (Поле ClientLogin).
 >Заполняем если агентский аккаунт.
