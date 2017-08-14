@@ -19,7 +19,7 @@
 let
     pqyd = (Token as text, ClientLogin as nullable text, FieldNames as text, ReportType as text, DateFrom as text, DateTo as text) =>
 let
-
+    ClientLogin = if ClientLogin = null then "" else ClientLogin,
 // Проверяем на TODAY и YESTERDAY
     DateFrom = if DateFrom = "TODAY"
         then Date.ToText(DateTime.Date(DateTime.LocalNow()), "yyyy-MM-dd")
