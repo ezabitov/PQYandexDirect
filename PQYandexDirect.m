@@ -44,7 +44,7 @@ let
     transpot = Table.Transpose(delete),
     merge = Table.CombineColumns(transpot, Table.ColumnNames(transpot),Combiner.CombineTextByDelimiter("", QuoteStyle.None),"Merged"),
     fieldnamestext = merge[Merged]{0},
-    ReportName = ReportType&"-"&DateFrom&"-"&DateTo&fieldnamestext
+    ReportName = ReportType&"-"&DateFrom&"-"&DateTo&fieldnamestext,
 
 // Присваиваем полученный токен
     AuthKey = "Bearer "&Token,
