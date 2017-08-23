@@ -25,14 +25,14 @@ let
         then Date.ToText(DateTime.Date(DateTime.LocalNow()), "yyyy-MM-dd")
     else
         if DateFrom = "YESTERDAY"
-            then Date.ToText(Date.AddDays(DateTime.Date(DateTime.LocalNow()), -1), "yyyy-mm-dd")
+            then Date.ToText(Date.AddDays(DateTime.Date(DateTime.LocalNow()), -1), "yyyy-MM-dd")
         else DateFrom,
 
     DateTo = if DateTo = "TODAY"
         then Date.ToText(DateTime.Date(DateTime.LocalNow()), "yyyy-MM-dd")
     else
         if DateTo = "YESTERDAY"
-            then Date.ToText(Date.AddDays(DateTime.Date(DateTime.LocalNow()), -1), "yyyy-mm-dd")
+            then Date.ToText(Date.AddDays(DateTime.Date(DateTime.LocalNow()), -1), "yyyy-MM-dd")
         else DateTo,
 
 // Обрабатываем параметр Fieldnames, делаем список, добавляем нужные значения
