@@ -1,10 +1,9 @@
 /*
      Функция, при помощи которой мы забираем данные из API Reports Яндекс.Директ
 
-     Версия 1.2
-     -- добавлена обработка "YESTERDAY" и "TODAY" в датах
-     -- добавлено автоматическое именование отчета
-     -- ClientLogin теперь необязательный
+     Версия 1.3
+     -- "YESTERDAY" и "TODAY" теперь можно писать маленькими буквами :)
+     -- в полях теперь можно делать пробелы
 
      Документация по API Reports: https://tech.yandex.ru/direct/doc/reports/reports-docpage/
      Список типов отчетов: https://tech.yandex.ru/direct/doc/reports/type-docpage/
@@ -21,14 +20,16 @@ let
 let
     ClientLogin = if ClientLogin = null then "" else ClientLogin,
 // Проверяем на TODAY и YESTERDAY
-    DateFrom = if DateFrom = "TODAY"
+    DateFrom = Text.Upper(DateFrom),
+    DateTo = Text.Upper(DateTo),
+    dateFrom = if DateFrom = "TODAY"
         then Date.ToText(DateTime.Date(DateTime.LocalNow()), "yyyy-MM-dd")
     else
         if DateFrom = "YESTERDAY"
             then Date.ToText(Date.AddDays(DateTime.Date(DateTime.LocalNow()), -1), "yyyy-MM-dd")
         else DateFrom,
 
-    DateTo = if DateTo = "TODAY"
+    dateTo = if DateTo = "TODAY"
         then Date.ToText(DateTime.Date(DateTime.LocalNow()), "yyyy-MM-dd")
     else
         if DateTo = "YESTERDAY"
@@ -39,12 +40,13 @@ let
 // Все это нужно чтобы можно было просто написать список полей через запятую :)
     new = Text.Split(FieldNames, ","),
     ToTable = Table.FromList(new, Splitter.SplitByNothing(), null, null, ExtraValues.Error),
-    PlusFieldName = Table.AddColumn(ToTable, "Custom", each "<FieldNames>"&[Column1]&"</FieldNames>"),
+    deleteSpace = Table.ReplaceValue(ToTable," ","",Replacer.ReplaceText,{"Column1"}),
+    PlusFieldName = Table.AddColumn(deleteSpace, "Custom", each "<FieldNames>"&[Column1]&"</FieldNames>"),
     delete = Table.SelectColumns(PlusFieldName,{"Custom"}),
     transpot = Table.Transpose(delete),
     merge = Table.CombineColumns(transpot, Table.ColumnNames(transpot),Combiner.CombineTextByDelimiter("", QuoteStyle.None),"Merged"),
     fieldnamestext = merge[Merged]{0},
-    ReportName = ReportType&"-"&DateFrom&"-"&DateTo&fieldnamestext,
+    ReportName = ReportType&"-"&dateFrom&"-"&dateTo&fieldnamestext,
 
 // Присваиваем полученный токен
     AuthKey = "Bearer "&Token,
@@ -54,8 +56,8 @@ let
     body =
         "<ReportDefinition xmlns=""http://api.direct.yandex.com/v5/reports"">
         <SelectionCriteria>
-        <DateFrom>"&DateFrom&"</DateFrom>
-        <DateTo>"&DateTo&"</DateTo>
+        <DateFrom>"&dateFrom&"</DateFrom>
+        <DateTo>"&dateTo&"</DateTo>
         </SelectionCriteria>
         "&fieldnamestext&"
         <ReportName>"&ReportName&"</ReportName>
