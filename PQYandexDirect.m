@@ -1,9 +1,8 @@
 /*
-     Функция, при помощи которой мы забираем данные из API Reports Яндекс.Директ
+     Функция, при помощи которой мы забираем данные из API Reports Яндекс.Директ/Power BI
 
-     Версия 1.3
-     -- "YESTERDAY" и "TODAY" теперь можно писать маленькими буквами :)
-     -- в полях теперь можно делать пробелы
+     Версия 1.4
+     -- добавилась возможность обновления в облаке Power Bi
 
      Документация по API Reports: https://tech.yandex.ru/direct/doc/reports/reports-docpage/
      Список типов отчетов: https://tech.yandex.ru/direct/doc/reports/type-docpage/
@@ -50,7 +49,7 @@ let
 
 // Присваиваем полученный токен
     AuthKey = "Bearer "&Token,
-    url = "https://api.direct.yandex.com/v5/reports",
+    url = "https://api.direct.yandex.com/",
 
 // Создаем тело запроса со всеми параметрами
     body =
@@ -69,6 +68,7 @@ let
 
 // Сам запрос
 Source = Web.Contents(url,[
+            RelativePath="v5/reports",
            Content = Text.ToBinary(body) ,
 
 // Заголовки запроса
