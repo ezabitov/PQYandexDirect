@@ -1,8 +1,9 @@
+
 /*
      Функция, при помощи которой мы забираем данные из API Reports Яндекс.Директ/Power BI
 
-     Версия 1.4
-     -- добавилась возможность обновления в облаке Power Bi
+     Версия 1.5 (thx Maxim Uvarov)
+     -- Добавлена обработка особых ответов сервера: если отчет еще не готов и таблица пустая, то выводится соответствующее сообщение, если сервер вернул ошибку то выводится сообщение с этой ошибкой
 
      Документация по API Reports: https://tech.yandex.ru/direct/doc/reports/reports-docpage/
      Список типов отчетов: https://tech.yandex.ru/direct/doc/reports/type-docpage/
@@ -11,7 +12,6 @@
 
      Создатель: Эльдар Забитов (http://zabitov.ru)
 */
-
 
 
 let
@@ -71,6 +71,8 @@ Source = Web.Contents(url,[
             RelativePath="v5/reports",
            Content = Text.ToBinary(body) ,
 
+           ManualStatusHandling={404, 400},
+
 // Заголовки запроса
          Headers = [#"Authorization"=AuthKey ,
                     #"Client-Login"=ClientLogin,
@@ -79,8 +81,34 @@ Source = Web.Contents(url,[
                     #"returnMoneyInMicros" = "false"]
 
              ]
-        )
+        ),
+        // Импортируем в Power BI
+            importData = Table.FromColumns({Lines.FromBinary(Source,null,null,65001)}),
+            removeTopRows = Table.Skip(importData,1),
+            removeBottomRows = Table.RemoveLastN(removeTopRows,1),
+            split1 = Table.SplitColumn(removeBottomRows, "Column1", Splitter.SplitTextByDelimiter("#(tab)", QuoteStyle.Csv)),
+            headers = Table.PromoteHeaders(split1, [PromoteAllScalars=true]),
+
+        // Проверяем, если таблица полученная из Яндекса пустая
+            checkIfTableEmpty =
+
+        // Проверяем есть ли финальная таблица
+                if Table.IsEmpty(headers)
+                    then
+
+        // Проверяем есть ли ответ от сервера с ошибкой
+                        if Table.IsEmpty(importData)
+
+        // Если ответа с ошибкой нет - выводим таблицу со строчкой, что ответ таблица еще не готова
+                            then #table({"data"}, {{"Ваш отчет еще не готов, попробуйте обновить его позже"}})
+
+        // Если ответ с ошибкой есть - выводим сообщение об ошибке
+                            else Xml.Tables(Source,null,65001)[Table]{0}
+
+        // Иначе выводим загруженную таблицу
+                    else headers
+
 in
-    Source
+    checkIfTableEmpty
 in
  pqyd
