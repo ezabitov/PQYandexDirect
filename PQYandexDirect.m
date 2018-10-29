@@ -2,8 +2,8 @@
 /*
      Функция, при помощи которой мы забираем данные из API Reports Яндекс.Директ/Power BI
 
-     Версия 1.5 (thx Maxim Uvarov)
-     -- Добавлена обработка особых ответов сервера: если отчет еще не готов и таблица пустая, то выводится соответствующее сообщение, если сервер вернул ошибку то выводится сообщение с этой ошибкой
+     Версия 1.6 
+     -- Добавлены «Goals» и «AttributionModels»
 
      Документация по API Reports: https://tech.yandex.ru/direct/doc/reports/reports-docpage/
      Список типов отчетов: https://tech.yandex.ru/direct/doc/reports/type-docpage/
@@ -15,9 +15,10 @@
 
 
 let
-    pqyd = (Token as text, ClientLogin as nullable text, FieldNames as text, ReportType as text, DateFrom as text, DateTo as text) =>
+    pqyd = (Token as text, ClientLogin as nullable text, FieldNames as text, ReportType as text, DateFrom as text, DateTo as text, Goals as nullable text, AttributionModel as nullable text) =>
 let
     ClientLogin = if ClientLogin = null then "" else ClientLogin,
+    AttributionModel = if List.Contains({"LC", "FC", "LSC"}, Text.Upper(AttributionModel)) = true then "<AttributionModels>"&AttributionModel&"</AttributionModels>" else "",
 // Проверяем на TODAY и YESTERDAY
     DateFrom = Text.Upper(DateFrom),
     DateTo = Text.Upper(DateTo),
@@ -45,7 +46,18 @@ let
     transpot = Table.Transpose(delete),
     merge = Table.CombineColumns(transpot, Table.ColumnNames(transpot),Combiner.CombineTextByDelimiter("", QuoteStyle.None),"Merged"),
     fieldnamestext = merge[Merged]{0},
-    ReportName = ReportType&"-"&dateFrom&"-"&dateTo&fieldnamestext,
+
+    ReportName = dateFrom&"-"&dateTo&fieldnamestext,
+
+    goals_new = Text.Split(Goals, ","),
+    goals_ToTable = Table.FromList(goals_new, Splitter.SplitByNothing(), null, null, ExtraValues.Error),
+    goals_deleteSpace = Table.ReplaceValue(goals_ToTable," ","",Replacer.ReplaceText,{"Column1"}),
+    goals_PlusFieldName = Table.AddColumn(goals_deleteSpace, "Custom", each "<Goals>"&[Column1]&"</Goals>"),
+    goals_delete = Table.SelectColumns(goals_PlusFieldName,{"Custom"}),
+    goals_transpot = Table.Transpose(goals_delete),
+    goals_merge = Table.CombineColumns(goals_transpot, Table.ColumnNames(goals_transpot),Combiner.CombineTextByDelimiter("", QuoteStyle.None),"Merged"),
+    goals_text = goals_merge[Merged]{0},
+
 
 // Присваиваем полученный токен
     AuthKey = "Bearer "&Token,
@@ -58,7 +70,7 @@ let
         <DateFrom>"&dateFrom&"</DateFrom>
         <DateTo>"&dateTo&"</DateTo>
         </SelectionCriteria>
-        "&fieldnamestext&"
+        "&goals_text&AttributionModel&fieldnamestext&"
         <ReportName>"&ReportName&"</ReportName>
         <ReportType>"&ReportType&"</ReportType>
         <DateRangeType>CUSTOM_DATE</DateRangeType>
