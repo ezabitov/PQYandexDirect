@@ -58,6 +58,7 @@ let
     goals_transpot = Table.Transpose(goals_delete),
     goals_merge = Table.CombineColumns(goals_transpot, Table.ColumnNames(goals_transpot),Combiner.CombineTextByDelimiter("", QuoteStyle.None),"Merged"),
     goals_text = goals_merge[Merged]{0},
+    goals = if goals_check = "" or AttributionModel = "" then "" else goals_text&AttributionModel&fieldnamestext
 
 
 // Присваиваем полученный токен
@@ -71,7 +72,7 @@ let
         <DateFrom>"&dateFrom&"</DateFrom>
         <DateTo>"&dateTo&"</DateTo>
         </SelectionCriteria>
-        "&goals_text&AttributionModel&fieldnamestext&"
+        "&goals&"
         <ReportName>"&ReportName&"</ReportName>
         <ReportType>"&ReportType&"</ReportType>
         <DateRangeType>CUSTOM_DATE</DateRangeType>
