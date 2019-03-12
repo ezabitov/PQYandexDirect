@@ -49,7 +49,7 @@ let
 
     ReportName = dateFrom&"-"&dateTo&fieldnamestext,
     
-    goals_check = if Goals = null then "" else Goals
+    goals_check = if Goals = null then "" else Goals,
     goals_new = Text.Split(goals_check, ","),
     goals_ToTable = Table.FromList(goals_new, Splitter.SplitByNothing(), null, null, ExtraValues.Error),
     goals_deleteSpace = Table.ReplaceValue(goals_ToTable," ","",Replacer.ReplaceText,{"Column1"}),
@@ -58,7 +58,7 @@ let
     goals_transpot = Table.Transpose(goals_delete),
     goals_merge = Table.CombineColumns(goals_transpot, Table.ColumnNames(goals_transpot),Combiner.CombineTextByDelimiter("", QuoteStyle.None),"Merged"),
     goals_text = goals_merge[Merged]{0},
-    goals = if goals_check = "" or AttributionModel = "" then "" else goals_text&AttributionModel&fieldnamestext
+    goals = if goals_check = "" or AttributionModel = "" then "" else goals_text&AttributionModel&fieldnamestext,
 
 
 // Присваиваем полученный токен
