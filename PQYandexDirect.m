@@ -48,8 +48,9 @@ let
     fieldnamestext = merge[Merged]{0},
 
     ReportName = dateFrom&"-"&dateTo&fieldnamestext,
-
-    goals_new = Text.Split(Goals, ","),
+    
+    goals_check = if Goals = null then "" else Goals
+    goals_new = Text.Split(goals_check, ","),
     goals_ToTable = Table.FromList(goals_new, Splitter.SplitByNothing(), null, null, ExtraValues.Error),
     goals_deleteSpace = Table.ReplaceValue(goals_ToTable," ","",Replacer.ReplaceText,{"Column1"}),
     goals_PlusFieldName = Table.AddColumn(goals_deleteSpace, "Custom", each "<Goals>"&[Column1]&"</Goals>"),
